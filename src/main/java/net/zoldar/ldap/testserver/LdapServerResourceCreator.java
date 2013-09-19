@@ -11,7 +11,7 @@ public class LdapServerResourceCreator extends LdapServerResource {
     }
 
     public LdapServerResource getResource() {
-        return new LdapServerResource() {
+        return new LdapPatchedServerResource() {
             @Override
             protected LdapConfiguration defaultConfiguration() {
                 return config;
