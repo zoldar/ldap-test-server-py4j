@@ -5,11 +5,12 @@ import com.github.trevershick.test.ldap.annotations.LdapConfiguration;
 import py4j.GatewayServer;
 
 import java.util.HashMap;
+import java.util.Map;
 
 public class Server {
     private static GatewayServer gateway;
 
-    private HashMap<Integer, LdapServerResource> servers;
+    private Map<Integer, LdapServerResource> servers = new HashMap<Integer, LdapServerResource>();
 
     public static void main(String[] args) throws Exception {
         gateway = new GatewayServer(new Server());
@@ -17,15 +18,10 @@ public class Server {
         System.out.println("Gateway server started on port "+gateway.getPort()+"!");
     }
 
-    private Server() {
-        servers = new HashMap<Integer, LdapServerResource>();
-    }
+    private Server() {}
 
     public int create(LdapConfiguration config) throws Exception {
-        LdapServerResource new_server;
-        int port;
-
-        port = config.port();
+        int port = config.port();
 
         if (servers.containsKey(port)) {
             if (servers.get(port).isStarted()) {
@@ -33,9 +29,15 @@ public class Server {
             }
         }
 
-        new_server = new LdapServerResourceCreator(config).getResource();
-        servers.put(port, new_server);
+        LdapServerResource newServer = new LdapServerResourceCreator(config).getResource();
+        servers.put(port, newServer);
         return port;
+    }
+
+    public void destroy() {
+        for (int serverId : servers.keySet()) {
+            destroy(serverId);
+        }
     }
 
     public void destroy(int serverId) {
@@ -47,9 +49,9 @@ public class Server {
     }
 
     public void start() throws Exception {
-        for (Integer key : servers.keySet()) {
-            if (!servers.get(key).isStarted()) {
-                servers.get(key).start();
+        for (int serverId : servers.keySet()) {
+            if (!servers.get(serverId).isStarted()) {
+                servers.get(serverId).start();
             }
         }
     }
@@ -61,8 +63,8 @@ public class Server {
     }
 
     public void stop() {
-        for (Integer key : servers.keySet()) {
-            servers.get(key).stop();
+        for (int serverId : servers.keySet()) {
+            servers.get(serverId).stop();
         }
     }
 
@@ -74,20 +76,16 @@ public class Server {
 
     /* functions provided for backwards compatability */
     public void start(LdapConfiguration config) throws Exception {
-        LdapServerResource new_server;
-        new_server = new LdapServerResourceCreator(config).getResource();
-        new_server.start();
+        LdapServerResource newServer = new LdapServerResourceCreator(config).getResource();
+        newServer.start();
 
-        // stop any existing servers running and clean them up
-        stop();
-        for (Integer key : servers.keySet()) {
-            servers.remove(key);
-        }
+        // destroy any existing servers running
+        destroy();
 
-        servers.put(new_server.port(), new_server);
+        servers.put(newServer.port(), newServer);
     }
 
     public int port() {
-        return servers.values().toArray(new LdapServerResource[0])[0].port();
+        return servers.values().iterator().next().port();
     }
 }

@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>net.zoldar.ldap.testserver</groupId>
     <artifactId>ldap-test-server</artifactId>
-    <version>0.0.2-SNAPSHOT</version>
+    <version>0.0.3-SNAPSHOT</version>
     <name>LDAP Test Server</name>
     <description>An in-memory LDAP server for testing purposes.</description>
     <repositories>
