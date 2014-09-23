@@ -4,10 +4,12 @@ import com.github.trevershick.test.ldap.LdapServerResource;
 import com.github.trevershick.test.ldap.annotations.LdapConfiguration;
 import py4j.GatewayServer;
 
+import java.util.HashMap;
+
 public class Server {
     private static GatewayServer gateway;
 
-    private LdapServerResource server;
+    private HashMap<Integer, LdapServerResource> servers;
 
     public static void main(String[] args) throws Exception {
         gateway = new GatewayServer(new Server());
@@ -15,18 +17,31 @@ public class Server {
         System.out.println("Gateway server started on port "+gateway.getPort()+"!");
     }
 
-    private Server() {}
+    private Server() {
+        servers = new HashMap<Integer, LdapServerResource>();
+    }
 
     public void stop() {
-        server.stop();
+        for (Integer key : servers.keySet()) {
+            servers.get(key).stop();
+        }
     }
 
     public void start(LdapConfiguration config) throws Exception {
-        server = new LdapServerResourceCreator(config).getResource();
-        server.start();
+        LdapServerResource new_server;
+        new_server = new LdapServerResourceCreator(config).getResource();
+        new_server.start();
+
+        // stop any existing servers running and clean them up
+        stop();
+        for (Integer key : servers.keySet()) {
+            servers.remove(key);
+        }
+
+        servers.put(new_server.port(), new_server);
     }
 
     public int port() {
-        return server.port();
+        return servers.values().toArray(new LdapServerResource[0])[0].port();
     }
 }
