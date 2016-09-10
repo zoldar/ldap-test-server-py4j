@@ -1,5 +1,6 @@
 package net.zoldar.ldap.testserver;
 
+import org.apache.commons.cli.*;
 import com.github.trevershick.test.ldap.LdapServerResource;
 import com.github.trevershick.test.ldap.annotations.LdapConfiguration;
 import py4j.GatewayServer;
@@ -13,7 +14,32 @@ public class Server {
     private Map<Integer, LdapServerResource> servers = new HashMap<Integer, LdapServerResource>();
 
     public static void main(String[] args) throws Exception {
-        gateway = new GatewayServer(new Server());
+
+        Options options = new Options();
+
+        Option port = new Option("p", "port", true, "GatewayServer port");
+        options.addOption(port);
+
+        CommandLineParser parser = new DefaultParser();
+        HelpFormatter formatter = new HelpFormatter();
+        CommandLine cmd;
+
+        try {
+            cmd = parser.parse(options, args);
+        } catch (ParseException e) {
+            System.out.println(e.getMessage());
+            formatter.printHelp("ldap-test-server", options);
+
+            System.exit(1);
+            return;
+        }
+
+        int gatewayPort = GatewayServer.DEFAULT_PORT;
+        if (cmd.hasOption("port")) {
+          String gatewayPortStr = cmd.getOptionValue("port");
+          gatewayPort = Integer.parseInt(gatewayPortStr);
+        }
+        gateway = new GatewayServer(new Server(), gatewayPort);
         gateway.start();
         System.out.println("Gateway server started on port "+gateway.getPort()+"!");
     }
