@@ -9,6 +9,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Server {
+    private static final String PORT_OPTION = "port";
+
     private static GatewayServer gateway;
 
     private Map<Integer, LdapServerResource> servers = new HashMap<Integer, LdapServerResource>();
@@ -17,7 +19,7 @@ public class Server {
 
         Options options = new Options();
 
-        Option port = new Option("p", "port", true, "GatewayServer port");
+        Option port = new Option("p", PORT_OPTION, true, "GatewayServer port");
         options.addOption(port);
 
         CommandLineParser parser = new DefaultParser();
@@ -35,8 +37,8 @@ public class Server {
         }
 
         int gatewayPort = GatewayServer.DEFAULT_PORT;
-        if (cmd.hasOption("port")) {
-          String gatewayPortStr = cmd.getOptionValue("port");
+        if (cmd.hasOption(PORT_OPTION)) {
+          String gatewayPortStr = cmd.getOptionValue(PORT_OPTION);
           gatewayPort = Integer.parseInt(gatewayPortStr);
         }
         gateway = new GatewayServer(new Server(), gatewayPort);
